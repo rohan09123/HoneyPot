@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+"""
+HoneyPy - Multi-Protocol Honeypot System
+Supports SSH and HTTP honeypots
+"""
+
+import argparse
+import threading
+import sys
+from ssh_honeypot import honeypot as ssh_honeypot
+from web_honeypot import run_web_honeypot
+
+def print_banner():
+    """Print ASCII banner"""
+    banner = """
+    ╔═══════════════════════════════════════╗
+    ║          🍯 HoneyPy v2.0 🍯           ║
+    ║   Multi-Protocol Honeypot System      ║
+    ╚═══════════════════════════════════════╝
+    """
+    print(banner)
+
+def run_ssh(address, port, username, password):
+    """Run SSH honeypot"""
+    print("\n" + "="*60)
+    print("🔒 STARTING SSH HONEYPOT")
+    print("="*60)
+    print(f"[*] Address: {address}")
+    print(f"[*] Port: {port}")
+    
+    if username and password:
+        print(f"[*] Username: {username}")
+        print(f"[*] Password: {password}")
+    else:
+        print("[*] Mode: Accept ALL credentials")
+    
+    print(f"[*] Connect with: ssh -p {port} anyuser@{address}")
+    print("="*60 + "\n")
+    
+    try:
+        ssh_honeypot(address, port, username, password)
+    except Exception as e:
+        print(f"[!] SSH Honeypot Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+def run_http(address, port, username, password):
+    """Run HTTP honeypot"""
+    print("\n" + "="*60)
+    print("🌐 STARTING HTTP HONEYPOT")
+    print("="*60)
+    print(f"[*] Address: {address}")
+    print(f"[*] Port: {port}")
+    print(f"[*] Username: {username}")
+    print(f"[*] Password: {password}")
+    print(f"[*] Visit: http://{address if address != '0.0.0.0' else 'localhost'}:{port}")
+    print("="*60 + "\n")
+    
+    try:
+        run_web_honeypot(port=port, input_username=username, input_password=password)
+    except Exception as e:
+        print(f"[!] HTTP Honeypot Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+def run_both(ssh_port, http_port, address, ssh_user, ssh_pass, http_user, http_pass):
+    """Run both honeypots simultaneously"""
+    print("\n" + "="*60)
+    print("🚀 STARTING BOTH HONEYPOTS")
+    print("="*60)
+    print(f"\n📡 SSH Honeypot:")
+    print(f"   Address: {address}:{ssh_port}")
+    print(f"   Connect: ssh -p {ssh_port} anyuser@{address}")
+    
+    print(f"\n🌐 HTTP Honeypot:")
+    print(f"   Address: {address}:{http_port}")
+    print(f"   Visit: http://{address if address != '0.0.0.0' else 'localhost'}:{http_port}")
+    print("\n" + "="*60 + "\n")
+    
+    # Start SSH in separate thread
+    ssh_thread = threading.Thread(
+        target=run_ssh,
+        args=(address, ssh_port, ssh_user, ssh_pass),
+        daemon=True
+    )
+    ssh_thread.start()
+    
+    # Give SSH time to start
+    import time
+    time.sleep(2)
+    
+    # Start HTTP in main thread (Flask needs to be in main thread)
+    run_http(address, http_port, http_user, http_pass)
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="HoneyPy - Multi-Protocol Honeypot System",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # SSH Honeypot (accept any credentials)
+  python honeypy.py -a 0.0.0.0 -p 2223 --ssh
+  
+  # SSH Honeypot (specific credentials)
+  python honeypy.py -a 0.0.0.0 -p 2223 -u admin -pw secret123 --ssh
+  
+  # HTTP Honeypot
+  python honeypy.py -a 0.0.0.0 -p 8080 --http
+  
+  # HTTP with custom credentials
+  python honeypy.py -a 0.0.0.0 -p 8080 -u admin -pw password --http
+  
+  # Run BOTH honeypots (SSH on 2223, HTTP on 8080)
+  python honeypy.py -a 0.0.0.0 --both --ssh-port 2223 --http-port 8080
+        """
+    )
+    
+    # Basic arguments
+    parser.add_argument('-a', '--address', type=str, default='0.0.0.0',
+                       help='Bind address (default: 0.0.0.0)')
+    parser.add_argument('-p', '--port', type=int,
+                       help='Port number (required for single honeypot)')
+    
+    # Credentials
+    parser.add_argument('-u', '--username', type=str,
+                       help='Username for authentication')
+    parser.add_argument('-pw', '--password', type=str,
+                       help='Password for authentication')
+    
+    # Honeypot type selection
+    parser.add_argument('-s', '--ssh', action="store_true",
+                       help='Run SSH honeypot')
+    parser.add_argument('-w', '--http', action="store_true",
+                       help='Run HTTP honeypot')
+    parser.add_argument('-b', '--both', action="store_true",
+                       help='Run BOTH SSH and HTTP honeypots')
+    
+    # Ports for both mode
+    parser.add_argument('--ssh-port', type=int, default=2223,
+                       help='SSH port when running both (default: 2223)')
+    parser.add_argument('--http-port', type=int, default=8080,
+                       help='HTTP port when running both (default: 8080)')
+    
+    # Credentials for both mode
+    parser.add_argument('--ssh-user', type=str,
+                       help='SSH username (for --both mode)')
+    parser.add_argument('--ssh-pass', type=str,
+                       help='SSH password (for --both mode)')
+    parser.add_argument('--http-user', type=str, default='admin',
+                       help='HTTP username (for --both mode, default: admin)')
+    parser.add_argument('--http-pass', type=str, default='password',
+                       help='HTTP password (for --both mode, default: password)')
+    
+    args = parser.parse_args()
+    
+    # Print banner
+    print_banner()
+    
+    try:
+        # MODE 1: Run both honeypots
+        if args.both:
+            ssh_user = args.ssh_user if args.ssh_user else args.username
+            ssh_pass = args.ssh_pass if args.ssh_pass else args.password
+            http_user = args.http_user if args.username else 'admin'
+            http_pass = args.http_pass if args.password else 'password'
+            
+            run_both(
+                ssh_port=args.ssh_port,
+                http_port=args.http_port,
+                address=args.address,
+                ssh_user=ssh_user,
+                ssh_pass=ssh_pass,
+                http_user=http_user,
+                http_pass=http_pass
+            )
+        
+        # MODE 2: SSH only
+        elif args.ssh:
+            if not args.port:
+                print("[!] Error: --port is required for SSH mode")
+                print("    Example: python honeypy.py -a 0.0.0.0 -p 2223 --ssh")
+                sys.exit(1)
+            
+            username = args.username if args.username else None
+            password = args.password if args.password else None
+            run_ssh(args.address, args.port, username, password)
+        
+        # MODE 3: HTTP only
+        elif args.http:
+            if not args.port:
+                print("[!] Error: --port is required for HTTP mode")
+                print("    Example: python honeypy.py -a 0.0.0.0 -p 8080 --http")
+                sys.exit(1)
+            
+            username = args.username if args.username else "admin"
+            password = args.password if args.password else "password"
+            run_http(args.address, args.port, username, password)
+        
+        # MODE 4: No mode selected - show help
+        else:
+            print("[!] Error: You must choose a honeypot type!\n")
+            print("Available modes:")
+            print("  --ssh   : Run SSH honeypot only")
+            print("  --http  : Run HTTP honeypot only")
+            print("  --both  : Run BOTH honeypots simultaneously")
+            print("\nExamples:")
+            print("  python honeypy.py -a 0.0.0.0 -p 2223 --ssh")
+            print("  python honeypy.py -a 0.0.0.0 -p 8080 --http")
+            print("  python honeypy.py -a 0.0.0.0 --both")
+            print("\nFor more help: python honeypy.py --help")
+            sys.exit(1)
+    
+    except KeyboardInterrupt:
+        print("\n\n[!] Shutting down HoneyPy...")
+        print("[+] Goodbye! 👋")
+    except Exception as e:
+        print(f"\n[!] Fatal Error: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
