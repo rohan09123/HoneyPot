@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Successful - WordPress</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.13);
+            text-align: center;
+        }
+        h1 {
+            color: #00a32a;
+            font-size: 28px;
+            margin: 0 0 20px;
+        }
+        .success-icon {
+            font-size: 64px;
+            color: #00a32a;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #2271b1;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .button:hover {
+            background: #135e96;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <h1>Login Successful!</h1>
+        <p>Welcome back, <strong>{{ username }}</strong></p>
+        <p>You have successfully logged into the dashboard.</p>
+        <a href="/" class="button">Go to Dashboard</a>
+    </div>
+</body>
+</html>

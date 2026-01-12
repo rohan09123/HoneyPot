@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Failed - WordPress</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 500px;
+            margin: 100px auto;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.13);
+        }
+        .error-box {
+            border-left: 4px solid #d63638;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+        .error-icon {
+            font-size: 24px;
+            color: #d63638;
+            margin-right: 10px;
+        }
+        h1 {
+            color: #d63638;
+            font-size: 20px;
+            margin: 0 0 10px;
+        }
+        p {
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #2271b1;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .button:hover {
+            background: #135e96;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-box">
+            <span class="error-icon">⚠</span>
+            <strong>ERROR:</strong> Invalid username or password.
+        </div>
+        <p>The username or password you entered is incorrect.</p>
+        <p>Please try again or contact your administrator.</p>
+        <a href="/" class="button">← Go Back</a>
+    </div>
+</body>
+</html>
